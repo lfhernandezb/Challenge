@@ -3,16 +3,15 @@
  */
 package com.example.challenge.entities;
 
-import org.json.JSONObject;
-import org.springframework.http.ResponseEntity;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author lfhernandez
  *
  */
+
+@JsonFilter("characterFilter")
 public class Character {
 	
 	long id;
@@ -22,20 +21,11 @@ public class Character {
 	String type;
 	Integer episodeCount;
 	Origin origin;
+	String[] episode;
 	
-	public Character(String jsonString) {
-		System.out.println("Character constructor");
-		JSONObject obj = new JSONObject(jsonString);
-		
-		id = obj.getLong("id");
-		name = obj.getString("name");
-		status = obj.getString("status");
-		species = obj.getString("species");
-		type = obj.getString("type");
-		episodeCount = obj.getJSONArray("episode").length();
-		origin = new Origin();
-		origin.setName(obj.getJSONObject("origin").getString("name"));
-		origin.setUrl(obj.getJSONObject("origin").getString("url"));
+	public Character() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -136,11 +126,26 @@ public class Character {
 		this.origin = origin;
 	}
 
+	/**
+	 * @return the episode
+	 */
+	public String[] getEpisode() {
+		return episode;
+	}
+
+	/**
+	 * @param episode the episode to set
+	 */
+	public void setEpisode(String[] episode) {
+		this.episode = episode;
+	}
+
 	@Override
 	public String toString() {
 		return "Character [id=" + id + ", name=" + name + ", status=" + status + ", species=" + species + ", type="
 				+ type + ", episodeCount=" + episodeCount + ", origin=" + origin + "]";
 	}
 
+	
 	
 }

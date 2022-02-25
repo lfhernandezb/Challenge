@@ -3,27 +3,13 @@
  */
 package com.example.challenge.services;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import com.example.challenge.entities.Character;
+import com.example.challenge.exceptions.NotFoundException;
 
 /**
  * @author lfhernandez
  *
  */
-
-@Service
-public class CharacterService {
-	
-	// desde application.properties
-	@Value("${character.endpoint}")
-	private String endpoint;
-
-
-	public ResponseEntity<String> getCharacter(String id) throws RestClientException {
-		RestTemplate restTemplate = new RestTemplate();
-		return restTemplate.getForEntity(endpoint+"/{id}", String.class, id);
-	}
+public interface CharacterService {
+	public Character getCharacter(String id) throws NotFoundException;
 }

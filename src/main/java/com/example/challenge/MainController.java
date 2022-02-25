@@ -5,6 +5,7 @@ package com.example.challenge;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,10 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.challenge.entities.Character;
 import com.example.challenge.entities.Location;
-import com.example.challenge.services.CharacterService;
-import com.example.challenge.services.LocationService;
+import com.example.challenge.exceptions.NotFoundException;
+import com.example.challenge.services.CharacterServiceImpl;
+import com.example.challenge.services.LocationServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+
 import org.apache.commons.validator.routines.*;
 
 /**
@@ -28,46 +34,35 @@ import org.apache.commons.validator.routines.*;
 public class MainController {
 	
 	@Autowired
-	public CharacterService characterService;
+	public CharacterServiceImpl characterService;
 
 	@Autowired
-	public LocationService locationService;
-
-	private static boolean isValidURL(String url) {
-		UrlValidator defaultValidator = new UrlValidator(); // default schemes
-		return defaultValidator.isValid(url);
-	}
-
+	public LocationServiceImpl locationService;
 
 	/**
 	 * character/id
+	 * @throws NotFoundException 
 	 * @throws JsonProcessingException 
 	 * @throws JsonMappingException 
 	 */
 	@GetMapping("/character/{id}")
-    public ResponseEntity<Character> getCharacter(
-    	@PathVariable String id) throws JsonMappingException, JsonProcessingException {
+    public MappingJacksonValue getCharacter(
+    	@PathVariable String id) throws NotFoundException {
 				
-		ResponseEntity<String> characterResponse = characterService.getCharacter(id);
-		System.out.println(characterResponse.getBody());
-		
-		// tenemos el personaje
-		Character character = new Character(characterResponse.getBody());
-		
-		// vamos por la ubicacion
-		if (isValidURL(character.getOrigin().getUrl())) {
-			
-			ResponseEntity<String> locationResponse = locationService.getLocation(character.getOrigin().getUrl());
-			System.out.println(locationResponse.getBody());
-			
-			// tenemos la ubicacion
-			Location location = new Location(locationResponse.getBody());
-			
-			character.getOrigin().setResidents(location.getResidents());
-			character.getOrigin().setDimension(location.getDimension());
-		}
-		System.out.println("character: " + character.toString());
-		return ResponseEntity.ok(character);
+		//return ResponseEntity.ok(characterService.getCharacter(id));
+        SimpleBeanPropertyFilter simpleBeanPropertyFilter =
+            SimpleBeanPropertyFilter.serializeAllExcept("episode");
+
+        FilterProvider filterProvider = new SimpleFilterProvider()
+                .addFilter("characterFilter", simpleBeanPropertyFilter);
+
+        Character character = characterService.getCharacter(id);
+
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(character);
+
+        mappingJacksonValue.setFilters(filterProvider);
+
+        return mappingJacksonValue;
     }
 
 
